@@ -79,6 +79,8 @@ struct Camera
 	}
 };
 
+inline int toInt( double x );
+
 struct Image
 {
 	Vec3* pixels;
@@ -87,7 +89,29 @@ struct Image
 	{
 		this->width = width_;
 		this->height = height_;
-		this->pixels = new Vec3[width, height];
+		this->pixels = new Vec3[width * height];
+	}
+
+	Vec3 getPixel( int x, int y )
+	{
+		int i = ( this->height-y-1 )*this->width + x;
+		return this->pixels[ i ];
+	}
+
+	void setPixel( int x, int y, Vec3 value )
+	{
+		int i = ( this->height-y-1 )*this->width + x;
+		this->pixels[i] = value;
+	}
+
+	void saveImg(char* filename)
+	{
+		FILE *f = fopen( filename , "w");         // Write image to PPM file.
+		fprintf(f, "P3\n%d %d\n%d\n", this->width, this->height, 255);
+
+		for (int i=0; i<this->width*this->height; i++)
+			fprintf(f,"%d %d %d ", toInt(pixels[i].x), toInt(pixels[i].y), toInt(pixels[i].z));
+
 	}
 };
 
@@ -189,35 +213,81 @@ Vec3 radiance( const Ray &ray, int depth, unsigned short* Xi, int E=1	)
 		Vec3 v = w.cross(u);														// v is perpendicular to u and w
 		Vec3 d = (u*cos(r1)*r2s + v*sin(r1)*r2s +w*sqrt(1-r2)).norm();			// d is random reflection ray
 		
-		// Loop over any lights
+		// Loop over any lights. TODO: Create a light class to handle lights
 		Vec3 e;
 		for ( int i = 0; i < numSpheres; i++ )
 		{
 			const Sphere& s = spheres[i];
 			if ( s.e.x <= 0 && s.e.y <= 0 && s.e.z <= 0 )
 				continue;												// Skip non lights
+			
+			// Create random direction towards sphere using method from <<Realistic Ray Tracing>>.
+			Vec3 sw=s.p-x, su=((fabs(sw.x)>0.1?Vec3(0,1):Vec3(1)).cross(sw)).norm(), sv=sw.cross(su);
+			double cos_a_max = sqrt(1-s.r*s.r/(x-s.p).dot(x-s.p));
+			double eps1 = erand48(Xi), eps2 = erand48(Xi);
+			double cos_a = 1-eps1+eps1*cos_a_max;
+			double sin_a = sqrt(1-cos_a*cos_a);
+			double phi = 2*M_PI*eps2;
+			Vec3 l = su*cos(phi)*sin_a + sv*sin(phi)*sin_a + sw*cos_a;
+			l.norm();
+
+			// Shoot shadow ray
+			if ( intersect(Ray( x, l ), t, id) && id == i )				// Check for occlusion with shadow ray
+			{
+				double omega = 2 * M_PI * ( 1 - cos_a_max );		// Compute 1/probability with respect to solid angle
+				e = e + f.mult( s.e * l.dot( nl ) * omega ) * M_1_PI;// 1/pi for brdf. Calculate lighting and add to current value;	
+			}
+
+			// Make recursive call with random ray direction computed earlier
+			return obj.e*E + e + f.mult( radiance( Ray(x,d), depth, Xi, 0 ) ); // The 0 parameter at the end turns off the emissive term at the next recursion level
 		}
 	}
 	else if( obj.refl == SPEC )										// Ideal SPECULAR reflection
 	{
+		// Mirror reflection. 
+		// TODO: Mirror reflection should not return 100% of lights, instead, energy should decrease
+		return obj.e + f.mult( radiance( Ray( x, ray.dir-n*2*n.dot( ray.dir ) ), depth, Xi ) ) * 0.98;
 	}
 	else																// Ideal dielectric Refraction
 	{
+		// We have a dielectric (glass) surface
+		// Glass is both reflective and refractive
+		Ray reflRay( x, ray.dir - n*2*n.dot(ray.dir) );				// Ideal dielectric reflection ray
+		bool into = n.dot(nl) > 0;										// Is the ray from outside and going into the glass?
+		double nc=1, nt = 1.5, nnt = into? nc/nt : nt/nc;				// IOR for glass is 1.5. nnt is either 1.5 or 1/1.5
+		double ddn = ray.dir.dot(nl), cos2t;
+
+		// If total internal reflection, reflect. (Fresnel effect)
+		if ( ( cos2t = 1-nnt*nnt*(1-ddn*ddn) ) < 0 )					// total internal reflection
+			return obj.e + f.mult( radiance( reflRay, depth, Xi ) );
+		
+		// Otherwise, choose reflection or refraction
+		Vec3 tdir = (ray.dir*nnt - n*((into?1:-1)*(ddn*nnt+sqrt(cos2t)))).norm();
+		double a=nt-nc, b=nt+nc;
+		double R0=a*a/(b*b);											// reflectance at normal incidence based on IOR
+		double c = 1-(into?-ddn:tdir.dot(n));							// 1- cos(theta)
+		double Re=R0+(1-R0)*c*c*c*c*c;								// Fresnel reflectance
+		double Tr=1-Re;					
+		double P=.25+.5*Re;											// Probability of reflecting
+		double RP=Re/P;												
+		double TP=Tr/(1-P); 
+
+		// Finally make 1 or 2 recursive calls
+		//		- Make 2 if depth is <= 2;
+		//		- Make 1 randomly if depth > 2
+		return obj.e + f.mult( depth > 2 ?
+			(erand48(Xi) < P ?  radiance(reflRay,depth,Xi)*RP:radiance(Ray(x,tdir),depth,Xi)*TP) :
+			radiance(reflRay,depth,Xi)*Re+radiance(Ray(x,tdir),depth,Xi)*Tr );
 
 	}
-
-
-
-
-	return Vec3();
 }
 
-int WIDTH = 512;
-int HEIGHT = 384;
+int WIDTH = 1024;
+int HEIGHT = 768;
 
 void main( int argc, char * argv[] )
 {
-	int samps = argc == 2? atoi( argv[1] )/4 : 1; // # Samples (default of 1)
+	int samps = argc == 2? atoi( argv[1] )/4 : 3; // # Samples (default of 1)
 
 	Camera cam( Vec3(50,52,295.6), Vec3(0, -0.042612, -1 ).norm(), Vec3( WIDTH*0.5135/HEIGHT ) );
 	Vec3 r;	// Used for colors of samples.
@@ -244,13 +314,26 @@ void main( int argc, char * argv[] )
 						double dy = tentFilter( 2*erand48(Xi) );		// | used to determine location of sample withing pixel
 
 						Vec3 rayDir = cam.cx * ( ( ( sx+0.5+dx )/2 + x ) / WIDTH - 0.5 ) +
-											  cam.cy * ( ( ( sy+0.5+dy )/2 + y ) / HEIGHT -0.5 ) + cam.dir;
+										 cam.cy * ( ( ( sy+0.5+dy )/2 + y ) / HEIGHT - 0.5 ) + cam.dir;
 						// Camera rays are pushed ^^^^ forward to start in interior
 						r = r + radiance( Ray(cam.pos + rayDir * 140, rayDir.norm() ), 0, Xi ) * (1.0 / samps);
 					}
+					Vec3 oldVal = img.getPixel( x, y );
+					double gamma = 0.25; 
+					Vec3 newVal = oldVal + Vec3( clamp( r.x ), clamp(r.y), clamp(r.z) ) * gamma;
+					img.setPixel(x, y, newVal);
 				}
 			}
 	}
+	/*
+	FILE *f = fopen("image.ppm", "w");         // Write image to PPM file.
+	fprintf(f, "P3\n%d %d\n%d\n", WIDTH, HEIGHT, 255);
+
+	for (int i=0; i<WIDTH*HEIGHT; i++)
+		fprintf(f,"%d %d %d ", toInt(img.pixels[i].x), toInt(img.pixels[i].y), toInt(img.pixels[i].z));
+	*/
+
+	img.saveImg( "image.ppm" );
 
 	return;
 }
