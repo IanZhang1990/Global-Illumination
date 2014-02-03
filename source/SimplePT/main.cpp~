@@ -21,6 +21,8 @@
 #define M_1_PI 1.0 / M_PI
 #endif
 
+#define MAXDEPTH 5
+
 double erand48( unsigned short xsubi[3] )
 {
 	return (double)rand() / double(RAND_MAX);
@@ -188,14 +190,15 @@ Vec3 radiance( const Ray &ray, int depth, unsigned short* Xi, int E=1	)
 																		// when a ray hits a glass surface, the ray tracer must 
 																		// determine if it is entering or leaving the glass to compute refraction ray.
 	Vec3 f = obj.c;													// object color (BRDF modulator)
-	
+	depth++;	
+
 	// Stop the recursion randomly based on the surface reflectivity.
 	//		- Use the max component (r,g,b) of the surface color
 	//		- Don't do Russian Roulette until after depth 5
 	
 	// Use maximum reflectivity amount for Russian roulette
 	double p = f.x > f.y && f.x > f.z ? f.x : f.y>f.z? f.y: f.z;	// Get the max reflectivity
-	if ( ++depth > 5 || !p )
+	if ( depth > MAXDEPTH || !p )
 		if ( erand48(Xi) < p )
 			f = f * ( 1/p );
 		else 
@@ -251,7 +254,7 @@ Vec3 radiance( const Ray &ray, int depth, unsigned short* Xi, int E=1	)
 	{
 		// Mirror reflection. 
 		// TODO: Mirror reflection should not return 100% of lights, instead, energy should decrease
-		return obj.e + f.mult( radiance( Ray( x, ray.dir-n*2*n.dot( ray.dir ) ), depth, Xi ) ) * 0.98;
+		return obj.e + f.mult( radiance( Ray( x, ray.dir-n*2*n.dot( ray.dir ) ), depth, Xi ) ) * 0.95;
 	}
 	else																// Ideal dielectric Refraction
 	{
@@ -287,8 +290,8 @@ Vec3 radiance( const Ray &ray, int depth, unsigned short* Xi, int E=1	)
 	}
 }
 
-int WIDTH = 1024;
-int HEIGHT = 768;
+int WIDTH = 1366;
+int HEIGHT = 850;
 
 int main( int argc, char * argv[] )
 {
