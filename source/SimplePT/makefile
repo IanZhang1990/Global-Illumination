@@ -1,4 +1,2 @@
-CFLAGS = -O3
-
 all:
-	g++ ${CFLAGS} -Wall -fopenmp -g main.cpp -o GlobalIllumination
+	g++ -g -Wall -fopenmp -o3 main.cpp
