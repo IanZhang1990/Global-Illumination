@@ -6,7 +6,7 @@ Global Illumination
 How to compile the program?
 -------------------
 
-*For Linux/Mac OS users:
+* For Linux/Mac OS users:\n
 	- Make sure you have g++ compiler installed
 	- Open your command.
 	- cd to source/SimplePT
@@ -17,7 +17,7 @@ How to compile the program?
 	- Wait for some minutes, until the image is 100% rendered
 	- There will be an image.ppm file. You can open it.
 
-*For Windows Users:
+* For Windows Users:
 	- Open the solution in Visual Studio 
 	- Set to Release build mode. Then build it.
 	- Run it. 
