@@ -12,6 +12,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
+#include <ctime>
 
 #ifndef M_PI
 #define M_PI  3.14159265354
@@ -293,6 +295,19 @@ Vec3 radiance( const Ray &ray, int depth, unsigned short* Xi, int E=1	)
 int WIDTH = 1366;
 int HEIGHT = 850;
 
+
+void showCurrentTime()
+{
+	// current date/time based on current system
+   time_t now = time(0);
+   
+   // convert now to string form
+   char* dt = ctime(&now);
+
+   std::cout << "\nThe local date and time is: " << dt << std::endl;
+}
+
+
 int main( int argc, char * argv[] )
 {
 	int samps = argc == 2? atoi( argv[1] )/4 : 1; // # Samples (default of 1)
@@ -301,9 +316,10 @@ int main( int argc, char * argv[] )
 	Vec3 r;	// Used for colors of samples.
 	Image img(WIDTH, HEIGHT); // Image to display
 
-	#pragma omp parallel for schedule (dynamic, 1) private (r) // OpenMP
-	
+	showCurrentTime();
+
 	// Loop over all image pixels
+	#pragma omp parallel for schedule (dynamic, 1) private (r) // OpenMP
 	for ( int y = 0; y<HEIGHT; y++ )	// Loop rows
 	{
 		fprintf(stderr,"\rRendering (%d spp) %5.2f%%",samps*4, 100.*y/(HEIGHT-1));
@@ -333,13 +349,8 @@ int main( int argc, char * argv[] )
 				}
 			}
 	}
-	/*
-	FILE *f = fopen("image.ppm", "w");         // Write image to PPM file.
-	fprintf(f, "P3\n%d %d\n%d\n", WIDTH, HEIGHT, 255);
 
-	for (int i=0; i<WIDTH*HEIGHT; i++)
-		fprintf(f,"%d %d %d ", toInt(img.pixels[i].x), toInt(img.pixels[i].y), toInt(img.pixels[i].z));
-	*/
+	showCurrentTime();
 
 	img.saveImg( "image.ppm" );
 
