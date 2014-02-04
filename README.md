@@ -6,7 +6,7 @@ Global Illumination
 How to compile the program?
 -------------------
 
-* For Linux/Mac OS users:\n
+* For Linux/Mac OS users:
 	- Make sure you have g++ compiler installed
 	- Open your command.
 	- cd to source/SimplePT
