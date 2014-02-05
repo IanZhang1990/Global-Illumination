@@ -31,4 +31,8 @@ Demo
 -------------------
 This is a screenshot of the rendering result:
 
+100 samples per subpixel
 ![](source/Release/image.png)
+
+500 samples per subpixel
+![](source/SimplePT/image.PNG)
