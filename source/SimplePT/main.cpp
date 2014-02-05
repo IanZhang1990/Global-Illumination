@@ -158,7 +158,10 @@ inline bool intersect( const Ray &ray, double &t, int &id )
 	double n = sizeof(spheres)/sizeof(Sphere);
 	double d = -1.0;
 	double inf = t = 1e20;
-	for (int i= int(n); i >= 0; i-- )
+	// TODO: does this exceed the range of sphere? what is n? 9? 8?
+	// Test result is n=9;  so you can't use "int i = int(n)""
+	//for (int i= int(n); i >= 0; i-- )
+	for (int i= 0; i < int(n); i++ )
 		if ( (d=spheres[i].intersect(ray)) && d < t )
 		{
 			t = d;	id = i;
@@ -292,7 +295,7 @@ Vec3 radiance( const Ray &ray, int depth, unsigned short* Xi, int E=1	)
 }
 
 int WIDTH = 1366;
-int HEIGHT = 1000;
+int HEIGHT = 950;
 
 
 void showCurrentTime()
