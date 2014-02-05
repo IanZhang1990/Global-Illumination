@@ -13,3 +13,13 @@
 *.a
 
 *.ppm
+*.PPM
+
+# windows compiled files
+*.exe
+*.pdb
+*.obj
+*.tlog
+*.manifest
+*.cache
+
