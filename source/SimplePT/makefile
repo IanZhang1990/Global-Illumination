@@ -1,2 +1,2 @@
 all:
-	g++ -g -Wall -fopenmp -o3 main.cpp
+	g++ -g -Wall -fpermissive -fopenmp -o3 main.cpp
