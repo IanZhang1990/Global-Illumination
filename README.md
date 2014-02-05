@@ -35,4 +35,4 @@ This is a screenshot of the rendering result:
 ![](source/Release/image.png)
 
 100 samples per subpixel
-![](source/SimplePT/image.png)
+![](source/SimplePT/image.PNG)
