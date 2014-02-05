@@ -8,7 +8,7 @@ How to compile the program?
 
 * For Linux/Mac OS users:
 	- Make sure you have g++ compiler installed
-	- Open your command.
+	- Open your terminal.
 	- cd to source/SimplePT
 	- Type: make
 	- In the same folder. You will get a binary file naned "3"
