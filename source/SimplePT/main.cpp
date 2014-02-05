@@ -292,7 +292,7 @@ Vec3 radiance( const Ray &ray, int depth, unsigned short* Xi, int E=1	)
 }
 
 int WIDTH = 1366;
-int HEIGHT = 850;
+int HEIGHT = 1000;
 
 
 void showCurrentTime()
@@ -348,7 +348,7 @@ int main( int argc, char * argv[] )
 				}
 			}
 	}
-	
+
 	showCurrentTime();
 
 	img.saveImg( "image.ppm" );
