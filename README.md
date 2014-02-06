@@ -11,7 +11,7 @@ How to compile the program?
 	- Open your terminal.
 	- cd to source/SimplePT
 	- Type: make
-	- In the same folder. You will get a binary file naned "3"
+	- In the same folder. You will get a binary file naned "a.out"
 	- Type: ./a.out 20
 		 (It means take 20 samples for each sub-pixel)
 	- Wait some minutes, until the image is 100% rendered
