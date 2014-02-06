@@ -128,11 +128,11 @@ Sphere spheres[] =
 {//Scene: radius, position, emission, color, material
 	//	 radius,        position			   emission,				color,                 material
 	Sphere(1e5, Vec3( 1e5+1,40.8,81.6),			Vec3(),					Vec3(.75,.25,.25),		DIFF),		//Left
-	Sphere(1e5, Vec3(-1e5+99,40.8,81.6),			Vec3(),					Vec3(.25,.25,.75),		DIFF),		//Rght
+	Sphere(1e5, Vec3(-1e5+99,40.8,81.6),		Vec3(),					Vec3(.25,.25,.75),		DIFF),		//Rght
 	Sphere(1e5, Vec3(50,40.8, 1e5),				Vec3(),					Vec3(.75,.75,.75),		DIFF),		//Back
 	Sphere(1e5, Vec3(50,40.8,-1e5+170),			Vec3(),					Vec3(),				DIFF),		//Frnt
 	Sphere(1e5, Vec3(50, 1e5, 81.6),			Vec3(),					Vec3(.75,.75,.75),		DIFF),		//Botm
-	Sphere(1e5, Vec3(50,-1e5+81.6,81.6),			Vec3(),					Vec3(.75,.75,.75),		DIFF),		//Top
+	Sphere(1e5, Vec3(50,-1e5+81.6,81.6),		Vec3(),					Vec3(.75,.75,.75),		DIFF),		//Top
 	Sphere(16.5,Vec3(27,16.5,47),				Vec3(),					Vec3(1,1,1)*.999,		SPEC),		//Mirr
 	Sphere(16.5,Vec3(73,25.0,78),				Vec3(),					Vec3(1,1,1)*.999,		REFR),		//Glas
 	Sphere(1.5,  Vec3(50,81.6-16.5,81.6),		Vec3(4,4,4)*100,		Vec3(),					DIFF),		//Lite
@@ -186,11 +186,11 @@ Vec3 radiance( const Ray &ray, int depth, unsigned short* Xi, int E=1	)
 {
 	double t;															// distance to intersection
 	int	id = 0;															// id of intersected object
-	if ( !intersect( ray, t, id )  ) return Vec3();							// if miss, return black
-	const Sphere &obj = spheres[id];										// get the  hit object
+	if ( !intersect( ray, t, id )  ) return Vec3();						// if miss, return black
+	const Sphere &obj = spheres[id];									// get the  hit object
 	Vec3 x = ray.o + ray.dir*t;											// the hit point
-	Vec3 n = ( x - obj.p).norm();											// normal vector of the point in the surface
-	Vec3 nl = n.dot(ray.dir) < 0? n:n*(-1);									// properly oriented surface
+	Vec3 n = ( x - obj.p).norm();										// normal vector of the point in the surface
+	Vec3 nl = n.dot(ray.dir) < 0? n:n*(-1);								// properly oriented surface
 																		// when a ray hits a glass surface, the ray tracer must 
 																		// determine if it is entering or leaving the glass to compute refraction ray.
 	Vec3 f = obj.c;														// object color (BRDF modulator)
@@ -202,8 +202,8 @@ Vec3 radiance( const Ray &ray, int depth, unsigned short* Xi, int E=1	)
 	
 	// Use maximum reflectivity amount for Russian roulette
 	double p = f.x > f.y && f.x > f.z ? f.x : f.y>f.z? f.y: f.z;		// Get the max reflectivity
-	if ( depth > MAXDEPTH || !p )
-		if ( erand48(Xi) < p )
+	if ( depth > MAXDEPTH )
+		if ( erand48(Xi) < p && depth < 99 )
 			f = f * ( 1/p );
 		else 
 			return obj.e * E;

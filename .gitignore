@@ -2,6 +2,7 @@
 *.slo
 *.lo
 *.o
+*.out
 
 # Compiled Dynamic libraries
 *.so
@@ -12,6 +13,7 @@
 *.la
 *.a
 
+/source/SimplePT/image.ppm
 *.ppm
 *.PPM
 
@@ -22,4 +24,6 @@
 *.tlog
 *.manifest
 *.cache
-
+/source/Debug
+/source/Release
+/source/ipch
