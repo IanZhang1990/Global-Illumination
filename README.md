@@ -12,7 +12,7 @@ How to compile the program?
 	- cd to source/SimplePT
 	- Type: make
 	- In the same folder. You will get a binary file naned "3"
-	- Type: ./3 20
+	- Type: ./a.out 20
 		 (It means take 20 samples for each sub-pixel)
 	- Wait some minutes, until the image is 100% rendered
 	- There will be an image.ppm file. You can open it.
