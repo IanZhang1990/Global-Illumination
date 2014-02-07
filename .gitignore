@@ -27,3 +27,8 @@
 /source/Debug
 /source/Release
 /source/ipch
+*.exe
+*.pdb
+*.log
+*.obj
+*.opensdf
