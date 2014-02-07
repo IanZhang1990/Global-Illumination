@@ -215,3 +215,5 @@ Desktop.ini
 $RECYCLE.BIN/
 source/Release/SimplePT.exe
 source/Release/SimplePT.pdb
+source/GlobalIllumination.sdf
+source/GlobalIllumination.suo
