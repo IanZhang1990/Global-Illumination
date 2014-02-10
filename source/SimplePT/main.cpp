@@ -258,7 +258,7 @@ Vec3 radiance( const Ray &ray, int depth, unsigned short* Xi, int E=1	)
 	{
 		// Mirror reflection. 
 		// TODO: Mirror reflection should not return 100% of lights, instead, energy should decrease
-		return obj.e + f.mult( radiance( Ray( x, ray.dir-n*2*n.dot( ray.dir ) ), depth, Xi ) ) * 0.95;
+		return obj.e + f.mult( radiance( Ray( x, ray.dir-n*2*n.dot( ray.dir ) ), depth, Xi ) ) * 0.995;
 	}
 	else																		// Ideal dielectric Refraction
 	{
